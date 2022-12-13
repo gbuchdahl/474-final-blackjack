@@ -1,6 +1,7 @@
 from typing import List, Tuple, Optional
 from random import shuffle
 
+
 class Card:
     def __init__(self, value: int) -> None:
         self.value = value
@@ -26,7 +27,7 @@ class Hand:
         if cards is None:
             cards = []
         self.cards = cards
-        self.value: int = 0
+        self.value: int = sum([card.get_value() for card in self.cards])
 
     def add_card(self, card: Card) -> None:
         self.cards.append(card)
@@ -69,8 +70,9 @@ class Hand:
     def __getitem__(self, index):
         return self.cards[index]
 
+
 class Shoe:
-    def __init__(self, num_decks: int):
+    def __init__(self, num_decks: int = 2):
         self.cards: List[Card] = []
         self.discards: List[Card] = []
         self.__num_decks = num_decks
