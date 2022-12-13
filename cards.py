@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from random import shuffle
 
 class Card:
@@ -22,8 +22,10 @@ class Card:
 
 
 class Hand:
-    def __init__(self):
-        self.cards: List[Card] = []
+    def __init__(self, cards: Optional[List[Card]] = None):
+        if cards is None:
+            cards = []
+        self.cards = cards
         self.value: int = 0
 
     def add_card(self, card: Card) -> None:
@@ -68,7 +70,7 @@ class Hand:
         return self.cards[index]
 
 class Shoe:
-    def __init__(self, num_decks: int, seed: int = None):
+    def __init__(self, num_decks: int):
         self.cards: List[Card] = []
         self.discards: List[Card] = []
         self.__num_decks = num_decks
