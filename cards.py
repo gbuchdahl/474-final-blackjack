@@ -90,6 +90,10 @@ class Shoe:
     def shuffle(self):
         shuffle(self.cards)
 
+    def get_count(self):
+        # TODO: implement card counting in the discards
+        pass
+
     def deal(self) -> Card:
         if len(self.cards) == 0:
             self.cards = self.discards

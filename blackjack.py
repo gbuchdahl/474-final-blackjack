@@ -99,13 +99,8 @@ class PlayableHand:
 class BlackjackStrategy(abc.ABC):
 
     @abc.abstractmethod
-    def get_action_from_total(self, total: int, is_soft: bool, upcard: Card, shoe: Shoe) -> Action:
+    def select_action(self, playable_hand: PlayableHand, shoe: Shoe) -> Action:
         pass
-
-    def get_action(self, playable_hand: PlayableHand, shoe: Shoe) -> Action:
-        value = playable_hand.get_value()
-        return self.get_action_from_total(total=value[0], is_soft=value[1],
-                                          upcard=playable_hand.upcard, shoe=shoe)
 
     @abc.abstractmethod
     def select_bet_size(self, shoe: Shoe) -> int:
@@ -116,7 +111,11 @@ class BlackjackStrategy(abc.ABC):
         for upcard in range(1, 11):
             res = []
             for hard_total in range(8, 22):
-                res.append(self.get_action_from_total(hard_total, False, Card(upcard), Shoe()))
+                fake_hand = Hand()
+                while fake_hand.get_value()[0] < hard_total:
+                    fake_hand.add_card(Card(min(hard_total - fake_hand.get_value()[0], 10)))
+                playable = PlayableHand(Shoe(), 1, Card(upcard), fake_hand)
+                res.append(self.select_action(playable, Shoe()))
             strategy[f"{upcard}"] = res
 
         df = pd.DataFrame(strategy)
@@ -130,17 +129,15 @@ class BlackjackStrategy(abc.ABC):
 
 
 class BlackjackGame:
-    def __init__(self, strategy: BlackjackStrategy, num_decks: int = 2, verbose=False,
-            num_hands: int = 100, initial_bankroll=1000):
+    def __init__(self, strategy: BlackjackStrategy, num_decks: int = 2, verbose=False):
         self.strategy = strategy
         self.shoe = Shoe(num_decks)
         self.verbose = verbose
-        self.num_hands = num_hands
-        self.initial_bankroll = initial_bankroll
 
-    def play(self):
-        bankroll = self.initial_bankroll
-        for i in range(self.num_hands):
+    def play(self, num_hands: int = 100, initial_bankroll=1000):
+        bankroll = initial_bankroll
+        total_amount_bet = 0
+        for i in range(num_hands):
             if self.verbose:
                 print(f"-------------------")
                 print(f"Hand #{i + 1}")
@@ -149,13 +146,16 @@ class BlackjackGame:
                 print(f"Bet: {bet}")
             playable_hand = PlayableHand(self.shoe, bet)
             while not playable_hand.is_terminal():
-                action = self.strategy.get_action(playable_hand, self.shoe)
+                action = self.strategy.select_action(playable_hand, self.shoe)
                 if self.verbose:
                     print(
                         f"Hand: {playable_hand.hand} Value: {playable_hand.get_value()} Action: {action}")
                 playable_hand = playable_hand.process_action(action)
-            bankroll += playable_hand.get_hand_value(self.verbose)
+            winnings = playable_hand.get_hand_value(self.verbose)
+            bankroll += winnings
             if self.verbose:
                 print(f"Bankroll: {bankroll}")
                 print(f"-------------------\n")
-        return bankroll
+            total_amount_bet += bet
+
+        return bankroll, (initial_bankroll - bankroll) / total_amount_bet

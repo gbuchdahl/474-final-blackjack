@@ -1,10 +1,12 @@
+import scipy
+
 from blackjack import BlackjackStrategy, Action, PlayableHand, BlackjackGame
 from cards import Shoe, Card
 
 
 class TestStrategy(BlackjackStrategy):
-    def get_action_from_total(self, total: int, is_soft: bool, upcard: Card, shoe: Shoe) -> Action:
-        if total < 16:
+    def select_action(self, hand: PlayableHand, shoe: Shoe) -> Action:
+        if hand.get_value()[0] < 16:
             return Action.HIT
         else:
             return Action.STAND
@@ -18,9 +20,10 @@ strategy.print_strategy()
 
 results = []
 for _ in range(10):
-    game = BlackjackGame(strategy, num_decks=2, verbose=False, num_hands=500000,
-                         initial_bankroll=100000)
-    res = game.play()
-    results.append(res / 100000)
+    game = BlackjackGame(strategy, num_decks=2, verbose=False)
+    initial_bankroll = 1_000_000
+    res = game.play(num_hands=500_000, initial_bankroll=initial_bankroll)[0]
+    results.append(res / initial_bankroll)
+    print("Result: %f", res / initial_bankroll)
 
-print(results)
+print(scipy.stats.describe(results))
