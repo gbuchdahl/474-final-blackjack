@@ -2,6 +2,7 @@ from blackjack import BlackjackStrategy, Action, PlayableHand, BlackjackGame
 from cards import Shoe, Card
 import time
 import random
+import numpy as np
 
 
 class QStrategyStdBet(BlackjackStrategy):
@@ -29,7 +30,7 @@ class QStrategyStdBet(BlackjackStrategy):
                 if random.random() < epsilon:
                     action = random.choice(playable_hand.get_all_actions())
                 else:
-                    action = Action(self.Q_dict[key].index(max(self.Q_dict[key])))
+                    action = Action(np.argmax(self.Q_dict[key]))
                 # remove later
                 if action == Action.SPLIT:
                     action = random.choice(playable_hand.get_all_actions())
@@ -52,7 +53,7 @@ class QStrategyStdBet(BlackjackStrategy):
         # remove this line once split implemented
         self.Q_dict[key][3] = -100000000000
 
-        return Action(self.Q_dict[key].index(max(self.Q_dict[key])))
+        return Action(np.argmax(self.Q_dict[key]))
 
     def select_bet_size(self, shoe: Shoe) -> int:
         return 10

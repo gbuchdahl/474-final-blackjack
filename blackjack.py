@@ -14,9 +14,7 @@ class Action(Enum):
 
 
 class PlayableHand:
-    def __init__(self, shoe: Shoe, bet: int, upcard=None, hand: Hand = None, hand_over:
-    bool =
-    False):
+    def __init__(self, shoe: Shoe, bet: int, upcard=None, hand: Hand = None, hand_over: bool = False):
         self.shoe = shoe
         self.hand: Hand = hand or self.shoe.deal_hand()
         self.upcard = upcard or self.shoe.deal()
@@ -26,8 +24,7 @@ class PlayableHand:
     def get_all_actions(self) -> List[Action]:
         actions = [Action.STAND, Action.HIT]
         if len(self.hand) == 2 and self.hand[0].value == self.hand[1].value:
-            # actions.append(Action.SPLIT)
-            # TODO: Splitting is not implemented yet
+            actions.append(Action.SPLIT)
             pass
         if len(self.hand) == 2:
             actions.append(Action.DOUBLE)
@@ -82,13 +79,17 @@ class PlayableHand:
         elif action == Action.HIT:
             new_hand = Hand(self.hand.cards)
             new_hand.add_card(self.shoe.deal())
-            return PlayableHand(self.shoe, self.bet, self.upcard, new_hand, self.hand_over)
+            return PlayableHand(self.shoe, self.bet, self.upcard, new_hand, False)
         elif action == Action.DOUBLE:
             new_hand = Hand(self.hand.cards)
             new_hand.add_card(self.shoe.deal())
             return PlayableHand(self.shoe, self.bet * 2, self.upcard, new_hand, True)
         elif action == Action.SPLIT:
-            raise NotImplementedError
+            new_hand = Hand(self.hand.cards[0])
+            new_hand.add_card(self.shoe.deal())
+            if self.hand.cards[0].get_value() == 1:
+                return PlayableHand(self.shoe, self.bet * 2, self.upcard, new_hand, True)
+            return PlayableHand(self.shoe, self.bet * 2, self.upcard, new_hand, False)         
         else:
             raise ValueError(f"Unknown action {action}")
 
