@@ -29,7 +29,7 @@ class PlayableHand:
             # actions.append(Action.SPLIT)
             # TODO: Splitting is not implemented yet
             pass
-        if len(self.hand) == 2 and self.hand.get_value()[0] <= 11:
+        if len(self.hand) == 2:
             actions.append(Action.DOUBLE)
         return actions
 
@@ -108,18 +108,20 @@ class BlackjackStrategy(abc.ABC):
 
     def print_strategy(self):
         strategy = {}
+        hard_total_dict = {8:[3,5], 9:[4,5],10:[4,6],11:[5,6],12:[5,7],13:[6,7],14:[6,8],15:[7,8],16:[7,9],17:[8,9],18:[8,10],19:[9,10],20:[10,11],21:[5,6,10]}
         for upcard in range(1, 11):
             res = []
             for hard_total in range(8, 22):
                 fake_hand = Hand()
-                while fake_hand.get_value()[0] < hard_total:
-                    fake_hand.add_card(Card(min(hard_total - fake_hand.get_value()[0], 10)))
+                for card in hard_total_dict[hard_total]:
+                    fake_hand.add_card(Card(card))
                 playable = PlayableHand(Shoe(), 1, Card(upcard), fake_hand)
                 res.append(self.select_action(playable, Shoe()))
             strategy[f"{upcard}"] = res
 
         df = pd.DataFrame(strategy)
         df.index = [f"Hard {i}" for i in range(8, 22)]
+        #I can't tell why, but it seems like the strategy on 11 is broken. it is always stand.
         with open("strategy.html", "w") as f:
             f.write(f"""
             <html>
@@ -144,6 +146,7 @@ class BlackjackGame:
             bet = self.strategy.select_bet_size(self.shoe)
             if self.verbose:
                 print(f"Bet: {bet}")
+            #are we playing the same shoe over and over again here? I'm confused how this works
             playable_hand = PlayableHand(self.shoe, bet)
             while not playable_hand.is_terminal():
                 action = self.strategy.select_action(playable_hand, self.shoe)
@@ -156,6 +159,5 @@ class BlackjackGame:
             if self.verbose:
                 print(f"Bankroll: {bankroll}")
                 print(f"-------------------\n")
-            total_amount_bet += bet
-
-        return bankroll, (initial_bankroll - bankroll) / total_amount_bet
+            total_amount_bet += playable_hand.bet
+        return bankroll, total_amount_bet
