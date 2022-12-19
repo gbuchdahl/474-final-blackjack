@@ -45,7 +45,7 @@ class DeepQBlackjack(BlackjackStrategy):
                 self.epsilon_max - self.epsilon_min
         )
         self.epsilon_decay = 0.995
-        self.batch_size = 32
+        self.batch_size = 128
         self.max_steps_per_episode = 10000
         self.learning_rate = 0.001
         self.state_size = 33
@@ -74,7 +74,8 @@ class DeepQBlackjack(BlackjackStrategy):
         for i, (state, action, reward, next_state, is_terminal) in enumerate(minibatch):
             target = reward  # if done
             if not is_terminal:
-                target = (reward + self.gamma * np.amax(self.model.predict(next_state)[0]))
+                target = (reward + self.gamma * np.amax(self.model.predict(next_state, verbose=0)[
+                                                            0]))
             target_f = np.array([predictions[i]])
             target_f[0][action] = target
             self.model.fit(state, target_f, epochs=1, verbose=0)
@@ -94,7 +95,7 @@ class DeepQBlackjack(BlackjackStrategy):
     def load_model(self, fn):
         self.model = keras.models.load_model(fn)
 
-    def run_dqn(self, n_episodes=50000, num_decks=8):
+    def run_dqn(self, n_episodes=50000, num_decks=1):
         shoe = Shoe(num_decks)
         for e in range(n_episodes):
             hand = shoe.deal_hand()
@@ -103,22 +104,29 @@ class DeepQBlackjack(BlackjackStrategy):
             state = hand_to_input_vector(playable_hand)
             state = np.reshape(state, [1, self.state_size])
             for time in range(self.max_steps_per_episode):
+
+                possible_actions = playable_hand.get_all_actions()
                 if self.epsilon > np.random.rand():
-                    action = random.randrange(self.action_size)
+                    action = random.choice(possible_actions)
+                    action = action.value
                 else:
-                    action = np.argmax(self.model.predict(state)[0])
+                    action_values = self.model.predict(state, verbose=0)[0]
+                    action_indices = [a.value for a in possible_actions]
+                    for i in range(4):
+                        if i not in action_indices:
+                            action_values[i] = -np.inf
+                    action = np.argmax(action_values)
 
                 next_hand, next_state, reward, is_terminal = step(playable_hand, Action(action))
                 next_state = np.reshape(next_state, [1, self.state_size])
                 self.remember(state, action, reward, next_state, is_terminal)
                 playable_hand = next_hand
                 if is_terminal:
-                    print("episode: {}/{}, score: {}, e: {:.2}"
-                          .format(e, n_episodes, time, self.epsilon))
+                    print(f"Episode {e}/{n_episodes}, hand: {str(playable_hand)}, score: {reward}")
                     break
             if len(self.memory) > self.batch_size and e % 100 == 0:
                 self.train(self.batch_size)
-            if e % 10 == 0:
+            if e % 1000 == 0:
                 self.target_train()
         self.save_model("dqn.h5")
 
@@ -128,7 +136,12 @@ class DeepQBlackjack(BlackjackStrategy):
         if str(state) in self.cache.keys():
             return self.cache[str(state)]
         else:
-            action = np.argmax(self.model.predict(state, verbose=0)[0])
+            action_values = self.model.predict(state, verbose=0)[0]
+            action_indices = [a.value for a in possible_actions]
+            for i in range(4):
+                if i not in action_indices:
+                    action_values[i] = -np.inf
+            action = np.argmax(action_values)
             self.cache[str(state)] = Action(action)
             return Action(action)
 
@@ -138,11 +151,11 @@ class DeepQBlackjack(BlackjackStrategy):
 
 if __name__ == "__main__":
     dqn = DeepQBlackjack()
-    dqn.run_dqn()
-    dqn.save_model("dqn2.h5")
-    # results = []
-    # dqn.load_model("dqn.h5")
-    # dqn.print_strategy()
+    # dqn.run_dqn()
+    # dqn.save_model("dqn2.h5")
+    results = []
+    dqn.load_model("dqn.h5")
+    dqn.print_strategy()
 
     # game = BlackjackGame(dqn, num_decks=2, verbose=False)
     # initial_bankroll = 1_000_000

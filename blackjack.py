@@ -15,7 +15,8 @@ class Action(Enum):
 
 
 class PlayableHand:
-    def __init__(self, shoe: Shoe, bet: int, upcard=None, hand: Hand = None, hand_over: bool = False):
+    def __init__(self, shoe: Shoe, bet: int, upcard=None, hand: Hand = None,
+            hand_over: bool = False):
         self.shoe = shoe
         self.hand: Hand = hand or self.shoe.deal_hand()
         self.upcard = upcard or self.shoe.deal()
@@ -145,7 +146,6 @@ class BlackjackStrategy(abc.ABC):
                 strategy[f"{upcard}"] = res
 
         df = pd.DataFrame(strategy)
-
         df.index = [f"{i}" for i in range(8, 21)] + [f"A,{i}" for i in range(2, 10)] + ["A,A"] + [f"{i},{i}" for i in range(2,11)]
         with open("strategy.html", "w") as f:
             f.write(f"""
