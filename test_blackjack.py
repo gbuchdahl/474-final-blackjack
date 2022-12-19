@@ -7,6 +7,8 @@ from q_learning import QStrategyStdBet
 
 class TestStrategy(BlackjackStrategy):
     def select_action(self, hand: PlayableHand, shoe: Shoe) -> Action:
+        if hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 8:
+            return Action.SPLIT
         if hand.get_value()[0] == 11:
             return Action.DOUBLE
         elif hand.get_value()[0] == 10 and hand.upcard.get_value() != 10 and hand.upcard.get_value() != 1:
@@ -25,12 +27,12 @@ class TestStrategy(BlackjackStrategy):
 
 
 
-# strategy = QStrategyStdBet()
-# Q_dict = strategy.q_learn()
-# strategy.print_strategy()
-
-strategy = TestStrategy()
+strategy = QStrategyStdBet()
+Q_dict = strategy.q_learn()
 strategy.print_strategy()
+
+# strategy = TestStrategy()
+# strategy.print_strategy()
 
 results = []
 for _ in range(10):

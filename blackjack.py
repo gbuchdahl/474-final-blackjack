@@ -25,7 +25,6 @@ class PlayableHand:
         actions = [Action.STAND, Action.HIT]
         if len(self.hand) == 2 and self.hand[0].value == self.hand[1].value:
             actions.append(Action.SPLIT)
-            pass
         if len(self.hand) == 2:
             actions.append(Action.DOUBLE)
         return actions
@@ -85,7 +84,7 @@ class PlayableHand:
             new_hand.add_card(self.shoe.deal())
             return PlayableHand(self.shoe, self.bet * 2, self.upcard, new_hand, True)
         elif action == Action.SPLIT:
-            new_hand = Hand(self.hand.cards[0])
+            new_hand = Hand([self.hand.cards[0]])
             new_hand.add_card(self.shoe.deal())
             if self.hand.cards[0].get_value() == 1:
                 return PlayableHand(self.shoe, self.bet * 2, self.upcard, new_hand, True)
