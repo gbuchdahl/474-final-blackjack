@@ -82,32 +82,38 @@ class Shoe:
                 self.cards.append(Card(value))
                 self.cards.append(Card(value))
                 self.cards.append(Card(value))
+        self.count = 0 
         self.shuffle()
 
     def __len__(self):
         return len(self.cards)
 
     def shuffle(self):
+        self.count = 0
         shuffle(self.cards)
 
-    def get_count(self):
-        # TODO: implement card counting in the discards
-        pass
-
     def deal(self) -> Card:
-        if len(self.cards) == 0:
-            self.cards = self.discards
-            self.discards = []
-            self.shuffle()
         card = self.cards.pop()
         self.discards.append(card)
+        if card.get_value() == 10 or card.get_value() == 1:
+            self.count -= 1
+        elif card.get_value() <= 6:
+            self.count += 1
         return card
 
     def deal_hand(self) -> Hand:
+        if len(self.cards) <= 10:
+            self.cards = self.cards + self.discards 
+            self.discards = []
+            self.shuffle()
+
         hand = Hand()
         hand.add_card(self.deal())
         hand.add_card(self.deal())
         return hand
+
+    def get_count(self) -> int:
+        return self.count
 
     def __repr__(self):
         return f"{self.__num_decks} deck shoe with {len(self.cards)} cards left"
