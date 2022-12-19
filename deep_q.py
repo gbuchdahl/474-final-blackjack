@@ -1,15 +1,13 @@
 import random
 from collections import deque
-from functools import cache
 
 import keras.models
 import numpy as np
-import scipy
 from keras import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
 
-from blackjack import BlackjackStrategy, PlayableHand, Action, BlackjackGame
+from blackjack import BlackjackStrategy, PlayableHand, Action
 from cards import Shoe
 
 
@@ -38,7 +36,7 @@ class DeepQBlackjack(BlackjackStrategy):
     def __init__(self):
         self.memory = deque(maxlen=2000)
         self.gamma = 0.99
-        self.epsilon = 0.2
+        self.epsilon = 1.0
         self.epsilon_min = 0.1
         self.epsilon_max = 1.0
         self.epsilon_interval = (
@@ -53,12 +51,11 @@ class DeepQBlackjack(BlackjackStrategy):
         self.tau = .125
         self.model = self._build_model()
         self.target_model = self._build_model()
-        self.cache = {}
 
     def _build_model(self):
         model = Sequential()
         model.add(Dense(66, activation="relu", input_dim=self.state_size))
-        model.add(Dense(self.action_size, activation="linear"))
+        model.add(Dense(self.action_size, activation="softmax"))
         model.compile(loss="mse", optimizer=Adam(lr=self.learning_rate))
         return model
 
@@ -67,15 +64,11 @@ class DeepQBlackjack(BlackjackStrategy):
 
     def train(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
-        inputs = np.array([m[0][0] for m in minibatch])
-
-        predictions = self.model.predict(inputs, batch_size=batch_size)
-
-        for i, (state, action, reward, next_state, is_terminal) in enumerate(minibatch):
+        for state, action, reward, next_state, is_terminal in minibatch:
             target = reward  # if done
             if not is_terminal:
                 target = (reward + self.gamma * np.amax(self.model.predict(next_state)[0]))
-            target_f = np.array([predictions[i]])
+            target_f = self.model.predict(state)
             target_f[0][action] = target
             self.model.fit(state, target_f, epochs=1, verbose=0)
         if self.epsilon > self.epsilon_min:
@@ -94,7 +87,7 @@ class DeepQBlackjack(BlackjackStrategy):
     def load_model(self, fn):
         self.model = keras.models.load_model(fn)
 
-    def run_dqn(self, n_episodes=50000, num_decks=8):
+    def run_dqn(self, n_episodes=10000, num_decks=8):
         shoe = Shoe(num_decks)
         for e in range(n_episodes):
             hand = shoe.deal_hand()
@@ -116,7 +109,7 @@ class DeepQBlackjack(BlackjackStrategy):
                     print("episode: {}/{}, score: {}, e: {:.2}"
                           .format(e, n_episodes, time, self.epsilon))
                     break
-            if len(self.memory) > self.batch_size and e % 100 == 0:
+            if len(self.memory) > self.batch_size:
                 self.train(self.batch_size)
             if e % 10 == 0:
                 self.target_train()
@@ -125,12 +118,8 @@ class DeepQBlackjack(BlackjackStrategy):
     def select_action(self, playable_hand: PlayableHand, shoe: Shoe) -> Action:
         state = hand_to_input_vector(playable_hand)
         state = np.reshape(state, [1, self.state_size])
-        if str(state) in self.cache.keys():
-            return self.cache[str(state)]
-        else:
-            action = np.argmax(self.model.predict(state, verbose=0)[0])
-            self.cache[str(state)] = Action(action)
-            return Action(action)
+        action = np.argmax(self.model.predict(state)[0])
+        return Action(action)
 
     def select_bet_size(self, shoe: Shoe) -> int:
         return 10
@@ -138,17 +127,6 @@ class DeepQBlackjack(BlackjackStrategy):
 
 if __name__ == "__main__":
     dqn = DeepQBlackjack()
-    # dqn.run_dqn()
-    # dqn.save_model("dqn.h5")
-    results = []
-    dqn.load_model("dqn.h5")
+    dqn.run_dqn()
+    dqn.save_model("dqn.h5")
     dqn.print_strategy()
-
-    # game = BlackjackGame(dqn, num_decks=2, verbose=False)
-    # initial_bankroll = 1_000_000
-    # for _ in range(5):
-    #     res = game.play(num_hands=50_000, initial_bankroll=initial_bankroll)
-    #     results.append((res[0] - initial_bankroll) / res[1])
-    #     print("Result: ", (res[0] - initial_bankroll) / res[1])
-    #
-    # print(scipy.stats.describe(results))
