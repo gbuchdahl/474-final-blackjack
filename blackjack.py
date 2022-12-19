@@ -89,7 +89,7 @@ class PlayableHand:
             new_hand.add_card(self.shoe.deal())
             if self.hand.cards[0].get_value() == 1:
                 return PlayableHand(self.shoe, self.bet * 2, self.upcard, new_hand, True)
-            return PlayableHand(self.shoe, self.bet * 2, self.upcard, new_hand, False)         
+            return PlayableHand(self.shoe, self.bet * 2, self.upcard, new_hand, False)
         else:
             raise ValueError(f"Unknown action {action}")
 
@@ -116,11 +116,13 @@ class BlackjackStrategy(abc.ABC):
         elif action == "Double":
             color = "green"
         return f"background-color: {color}"
-    
+
     def print_strategy(self):
         action_to_words = {Action.SPLIT: "Split", Action.STAND: "Stand", Action.HIT: "Hit", Action.DOUBLE: "Double"}
         strategy = {}
-        hard_total_dict = {8:[3,5], 9:[4,5],10:[4,6],11:[5,6],12:[5,7],13:[6,7],14:[6,8],15:[7,8],16:[7,9],17:[8,9],18:[8,10],19:[9,10],20:[10,11],21:[5,6,10]}
+        hard_total_dict = {8: [3, 5], 9: [4, 5], 10: [4, 6], 11: [5, 6], 12: [5, 7], 13: [6, 7],
+                           14: [6, 8], 15: [7, 8], 16: [7, 9], 17: [8, 9], 18: [8, 10], 19: [9, 10],
+                           20: [10, 11], 21: [5, 6, 10]}
         for upcard in list(range(2, 11)) + [1]:
             res = []
             for hard_total in range(8, 21):
@@ -141,7 +143,7 @@ class BlackjackStrategy(abc.ABC):
                 strategy["A"] = res
             else:
                 strategy[f"{upcard}"] = res
-        
+
         df = pd.DataFrame(strategy)
 
         df.index = [f"{i}" for i in range(8, 21)] + [f"A,{i}" for i in range(2, 10)] + ["A,A"] + [f"{i},{i}" for i in range(2,11)]
@@ -169,7 +171,7 @@ class BlackjackGame:
             bet = self.strategy.select_bet_size(self.shoe)
             if self.verbose:
                 print(f"Bet: {bet}")
-            #are we playing the same shoe over and over again here? I'm confused how this works
+            # are we playing the same shoe over and over again here? I'm confused how this works
             playable_hand = PlayableHand(self.shoe, bet)
             while not playable_hand.is_terminal():
                 action = self.strategy.select_action(playable_hand, self.shoe)
