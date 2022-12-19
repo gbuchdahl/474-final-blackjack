@@ -2,6 +2,7 @@ import abc
 from enum import Enum
 from typing import List, Tuple
 import pandas as pd
+import jinja2
 
 from cards import Shoe, Hand, Card
 
@@ -106,27 +107,49 @@ class BlackjackStrategy(abc.ABC):
     def select_bet_size(self, shoe: Shoe) -> int:
         pass
 
+    def color_background(self, action: Action):
+        color = 'none'
+        if action == "Stand":
+            color = 'red'
+        elif action == "Split":
+            color = "blue"
+        elif action == "Double":
+            color = "green"
+        return f"background-color: {color}"
+    
     def print_strategy(self):
+        action_to_words = {Action.SPLIT: "Split", Action.STAND: "Stand", Action.HIT: "Hit", Action.DOUBLE: "Double"}
         strategy = {}
         hard_total_dict = {8:[3,5], 9:[4,5],10:[4,6],11:[5,6],12:[5,7],13:[6,7],14:[6,8],15:[7,8],16:[7,9],17:[8,9],18:[8,10],19:[9,10],20:[10,11],21:[5,6,10]}
-        for upcard in range(1, 11):
+        for upcard in list(range(2, 11)) + [1]:
             res = []
-            for hard_total in range(8, 22):
+            for hard_total in range(8, 21):
                 fake_hand = Hand()
                 for card in hard_total_dict[hard_total]:
                     fake_hand.add_card(Card(card))
                 playable = PlayableHand(Shoe(), 1, Card(upcard), fake_hand)
-                res.append(self.select_action(playable, Shoe()))
-            strategy[f"{upcard}"] = res
-
+                res.append(action_to_words[self.select_action(playable, Shoe())])
+            for soft_card in range(2,10):
+                fake_hand = Hand([Card(1), Card(soft_card)])
+                playable = PlayableHand(Shoe(), 1, Card(upcard), fake_hand)
+                res.append(action_to_words[self.select_action(playable, Shoe())])
+            for pair in range(1,11):
+                fake_hand = Hand([Card(pair), Card(pair)])
+                playable = PlayableHand(Shoe(), 1, Card(upcard), fake_hand)
+                res.append(action_to_words[self.select_action(playable, Shoe())])
+            if upcard == 1:
+                strategy["A"] = res
+            else:
+                strategy[f"{upcard}"] = res
+        
         df = pd.DataFrame(strategy)
-        df.index = [f"Hard {i}" for i in range(8, 22)]
-        #I can't tell why, but it seems like the strategy on 11 is broken. it is always stand.
+
+        df.index = [f"{i}" for i in range(8, 21)] + [f"A,{i}" for i in range(2, 10)] + ["A,A"] + [f"{i},{i}" for i in range(2,11)]
         with open("strategy.html", "w") as f:
             f.write(f"""
             <html>
                 <head><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"></head>
-            <body>{df.to_html()}</body>
+            <body>{df.style.applymap(self.color_background).to_html()}</body>
             </html>""")
 
 

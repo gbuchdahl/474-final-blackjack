@@ -13,18 +13,19 @@ class TestStrategy(BlackjackStrategy):
             return Action.SPLIT
         elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 1:
             return Action.SPLIT
-        elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 1:
+        elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 9:
             if hand.upcard.get_value() != 7 and hand.upcard.get_value() != 10 and hand.upcard.get_value() != 1:
                 return Action.SPLIT
-        elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 7 and hand.upcard.get_value() <= 7:
+            return Action.STAND
+        elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 7 and hand.upcard.get_value() <= 7 and hand.upcard.get_value() != 1:
             return Action.SPLIT
-        elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 6 and hand.upcard.get_value() <= 6:
+        elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 6 and hand.upcard.get_value() <= 6 and hand.upcard.get_value() != 1:
             return Action.SPLIT
         elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 4 and (hand.upcard.get_value() == 5 or hand.upcard.get_value() == 6):
             return Action.SPLIT
-        elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 2 and hand.upcard.get_value() <= 7:
+        elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 2 and hand.upcard.get_value() <= 7 and hand.upcard.get_value() != 1:
             return Action.SPLIT
-        elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 3 and hand.upcard.get_value() <= 7:
+        elif len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 3 and hand.upcard.get_value() <= 7 and hand.upcard.get_value() != 1:
             return Action.SPLIT
 
         elif hand.get_value()[1] and hand.get_value()[0] == 20:
