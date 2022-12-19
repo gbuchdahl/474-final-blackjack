@@ -7,6 +7,8 @@ from q_learning import QStrategyStdBet
 
 class TestStrategy(BlackjackStrategy):
     def select_action(self, hand: PlayableHand, shoe: Shoe) -> Action:
+        if hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 8:
+            return Action.SPLIT
         if hand.hand.is_blackjack():
             return Action.STAND
         if len(hand.hand) == 2 and hand.hand[0].value == hand.hand[1].value and hand.hand[0].value == 8:
@@ -49,8 +51,8 @@ class TestStrategy(BlackjackStrategy):
             return Action.HIT
         elif len(hand.hand) == 2 and hand.get_value()[1]:
             return Action.DOUBLE
-            
-       
+
+
 
 
         elif hand.get_value()[0] == 11:
@@ -59,7 +61,7 @@ class TestStrategy(BlackjackStrategy):
             return Action.DOUBLE
         elif hand.get_value()[0] == 9 and hand.upcard.get_value() >= 3 and hand.upcard.get_value() <= 6:
             return Action.DOUBLE
-        
+
 
 
 
@@ -70,7 +72,7 @@ class TestStrategy(BlackjackStrategy):
             return Action.HIT
         elif hand.get_value()[0] >= 12 and hand.upcard.get_value() >= 2 and hand.upcard.get_value() <= 6:
             return Action.STAND
-        
+
         elif hand.get_value()[0] <= 11:
             return Action.HIT
         else:
@@ -81,12 +83,12 @@ class TestStrategy(BlackjackStrategy):
 
 
 
-# strategy = QStrategyStdBet()
-# Q_dict = strategy.q_learn()
-# strategy.print_strategy()
-
-strategy = TestStrategy()
+strategy = QStrategyStdBet()
+Q_dict = strategy.q_learn()
 strategy.print_strategy()
+
+# strategy = TestStrategy()
+# strategy.print_strategy()
 
 results = []
 for _ in range(10):
