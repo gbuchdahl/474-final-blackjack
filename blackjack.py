@@ -3,6 +3,8 @@ from enum import Enum
 from typing import List, Tuple
 import pandas as pd
 import jinja2
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 from cards import Shoe, Hand, Card
 
@@ -158,6 +160,7 @@ class BlackjackGame:
         self.strategy = strategy
         self.shoe = Shoe(num_decks)
         self.verbose = verbose
+        self.count_stats = {}
 
     def play(self, num_hands: int = 100, initial_bankroll=1000):
         bankroll = initial_bankroll
@@ -183,4 +186,32 @@ class BlackjackGame:
                 print(f"Bankroll: {bankroll}")
                 print(f"-------------------\n")
             total_amount_bet += playable_hand.bet
+            if self.shoe.get_count() > 15:
+                print(self.shoe.discards)
+            if self.shoe.get_count() not in self.count_stats.keys():
+                self.count_stats[self.shoe.get_count()] = [1, winnings]
+            else:
+                self.count_stats[self.shoe.get_count()][0] += 1
+                self.count_stats[self.shoe.get_count()][1] += winnings
         return bankroll, total_amount_bet
+    
+    def plot(self):
+        sns.set_theme(style="darkgrid")
+        vals = []
+        counts = []
+        for item in self.count_stats.items():
+            if item[0] > 15:
+                self.count_stats[15][0] += item[1][0]
+                self.count_stats[15][1] += item[1][1]
+            elif item[0] < -15:
+                self.count_stats[-15][0] += item[1][0]
+                self.count_stats[-15][1] += item[1][1]
+        for item in self.count_stats.items():
+            if abs(item[0]) <= 15:
+                counts.append(item[0])
+                vals.append(item[1][1]/item[1][0])
+        sns.scatterplot(x=counts,y=vals)
+        sns.regplot(x=counts, y =vals)
+        plt.xlabel("current count")
+        plt.ylabel("percent return at given count")
+        plt.show()
