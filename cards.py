@@ -72,7 +72,7 @@ class Hand:
 
 
 class Shoe:
-    def __init__(self, num_decks: int = 2):
+    def __init__(self, num_decks: int = 2, is_stacked=False):
         self.cards: List[Card] = []
         self.discards: List[Card] = []
         self.__num_decks = num_decks
@@ -82,7 +82,13 @@ class Shoe:
                 self.cards.append(Card(value))
                 self.cards.append(Card(value))
                 self.cards.append(Card(value))
-        self.count = 0 
+            if is_stacked:
+                for value in range(10, 14):
+                    self.cards.append(Card(value))
+                    self.cards.append(Card(value))
+                self.cards.append(Card(1))
+                self.cards.append(Card(1))
+        self.count = 0
         self.shuffle()
 
     def __len__(self):
@@ -103,7 +109,7 @@ class Shoe:
 
     def deal_hand(self) -> Hand:
         if len(self.cards) <= 10:
-            self.cards = self.cards + self.discards 
+            self.cards = self.cards + self.discards
             self.discards = []
             self.shuffle()
 
