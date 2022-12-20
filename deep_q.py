@@ -1,6 +1,5 @@
 import random
 from collections import deque
-from functools import cache
 
 import keras.models
 import numpy as np
@@ -10,18 +9,27 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 
 from blackjack import BlackjackStrategy, PlayableHand, Action, BlackjackGame
-from cards import Shoe
+from cards import Shoe, Card, Hand
+
+NUM_HAND_VALUES = 22
+NUM_UPCARDS = 10
+NUM_PAIRS = 10
+EXTRA_INPUTS = 1
+STATE_SIZE = NUM_HAND_VALUES + NUM_UPCARDS + NUM_PAIRS + EXTRA_INPUTS
 
 
 def hand_to_input_vector(hand: PlayableHand):
     hand_value, soft = hand.hand.get_value()
     hand_value = min(22, hand_value)
-    hand_vector = np.zeros(22)
+    hand_vector = np.zeros(NUM_HAND_VALUES)
     hand_vector[hand_value - 1] = 1
-    upcard_vector = np.zeros(10)
+    upcard_vector = np.zeros(NUM_UPCARDS)
     upcard_vector[hand.upcard.get_value() - 1] = 1
     is_soft = [1] if soft else [0]
-    return np.concatenate((hand_vector, upcard_vector, is_soft))
+    pairs = np.zeros(NUM_PAIRS)
+    if hand.hand[0] == hand.hand[1]:
+        pairs[hand.hand[0].get_value() - 1] = 1
+    return np.concatenate((hand_vector, upcard_vector, is_soft, pairs))
 
 
 def step(hand: PlayableHand, action: Action):
@@ -37,19 +45,18 @@ class DeepQBlackjack(BlackjackStrategy):
 
     def __init__(self):
         self.memory = deque(maxlen=2000)
-        self.gamma = 0.99
-        self.epsilon = 0.2
+        self.gamma = 0.9999
+        self.epsilon = 0.25
         self.epsilon_min = 0.1
-        self.epsilon_max = 1.0
+        self.epsilon_max = .25
         self.epsilon_interval = (
                 self.epsilon_max - self.epsilon_min
         )
         self.epsilon_decay = 0.995
         self.batch_size = 128
-        self.max_steps_per_episode = 10000
         self.learning_rate = 0.001
-        self.state_size = 33
-        self.action_size = 4
+        self.state_size = STATE_SIZE
+        self.action_size = len(Action)
         self.tau = .250
         self.model = self._build_model()
         self.target_model = self._build_model()
@@ -57,7 +64,8 @@ class DeepQBlackjack(BlackjackStrategy):
 
     def _build_model(self):
         model = Sequential()
-        model.add(Dense(66, activation="relu", input_dim=self.state_size))
+        model.add(Dense(STATE_SIZE * 2, activation="relu", input_dim=self.state_size))
+        model.add(Dense(STATE_SIZE, activation="relu"))
         model.add(Dense(self.action_size, activation="linear"))
         model.compile(loss="mse", optimizer=Adam(lr=self.learning_rate))
         return model
@@ -95,7 +103,10 @@ class DeepQBlackjack(BlackjackStrategy):
     def load_model(self, fn):
         self.model = keras.models.load_model(fn)
 
-    def run_dqn(self, n_episodes=50000, num_decks=1):
+    def run_dqn(self, n_episodes=200_000, num_decks=1):
+        """
+        Trains the model using Deep Q Learning.
+        """
         shoe = Shoe(num_decks)
         for e in range(n_episodes):
             hand = shoe.deal_hand()
@@ -103,8 +114,7 @@ class DeepQBlackjack(BlackjackStrategy):
             playable_hand = PlayableHand(shoe=shoe, bet=10, hand=hand, upcard=upcard)
             state = hand_to_input_vector(playable_hand)
             state = np.reshape(state, [1, self.state_size])
-            for time in range(self.max_steps_per_episode):
-
+            while True:
                 possible_actions = playable_hand.get_all_actions()
                 if self.epsilon > np.random.rand():
                     action = random.choice(possible_actions)
@@ -131,11 +141,15 @@ class DeepQBlackjack(BlackjackStrategy):
         self.save_model("dqn.h5")
 
     def select_action(self, playable_hand: PlayableHand, shoe: Shoe) -> Action:
+        """
+        Called after the model has been trained. Selects the action for given hand and shoe.
+        """
         state = hand_to_input_vector(playable_hand)
         state = np.reshape(state, [1, self.state_size])
         if str(state) in self.cache.keys():
             return self.cache[str(state)]
         else:
+            possible_actions = playable_hand.get_all_actions()
             action_values = self.model.predict(state, verbose=0)[0]
             action_indices = [a.value for a in possible_actions]
             for i in range(4):
@@ -152,16 +166,16 @@ class DeepQBlackjack(BlackjackStrategy):
 if __name__ == "__main__":
     dqn = DeepQBlackjack()
     # dqn.run_dqn()
-    # dqn.save_model("dqn2.h5")
+    # dqn.save_model("dqn-pair-hidden-layer.h5")
     results = []
-    dqn.load_model("dqn.h5")
+    dqn.load_model("dqn-pair-hidden-layer.h5")
     dqn.print_strategy()
 
-    # game = BlackjackGame(dqn, num_decks=2, verbose=False)
-    # initial_bankroll = 1_000_000
-    # for _ in range(5):
-    #     res = game.play(num_hands=50_000, initial_bankroll=initial_bankroll)
-    #     results.append((res[0] - initial_bankroll) / res[1])
-    #     print("Result: ", (res[0] - initial_bankroll) / res[1])
-    #
-    # print(scipy.stats.describe(results))
+    game = BlackjackGame(dqn, num_decks=2, verbose=False)
+    initial_bankroll = 1_000_000
+    for _ in range(10):
+        res = game.play(num_hands=50_000, initial_bankroll=initial_bankroll)
+        results.append((res[0] - initial_bankroll) / res[1])
+        print("Result: ", (res[0] - initial_bankroll) / res[1])
+
+    print(scipy.stats.describe(results))

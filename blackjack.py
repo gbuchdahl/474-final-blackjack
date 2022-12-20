@@ -23,9 +23,12 @@ class PlayableHand:
         self.bet = bet
         self.hand_over = hand_over or False
 
+    def is_pair(self):
+        return len(self.hand) == 2 and self.hand[0].value == self.hand[1].value
+
     def get_all_actions(self) -> List[Action]:
         actions = [Action.STAND, Action.HIT]
-        if len(self.hand) == 2 and self.hand[0].value == self.hand[1].value:
+        if self.is_pair():
             actions.append(Action.SPLIT)
         if len(self.hand) == 2:
             actions.append(Action.DOUBLE)
@@ -119,7 +122,8 @@ class BlackjackStrategy(abc.ABC):
         return f"background-color: {color}"
 
     def print_strategy(self):
-        action_to_words = {Action.SPLIT: "Split", Action.STAND: "Stand", Action.HIT: "Hit", Action.DOUBLE: "Double"}
+        action_to_words = {Action.SPLIT: "Split", Action.STAND: "Stand", Action.HIT: "Hit",
+                           Action.DOUBLE: "Double"}
         strategy = {}
         hard_total_dict = {8: [3, 5], 9: [4, 5], 10: [4, 6], 11: [5, 6], 12: [5, 7], 13: [6, 7],
                            14: [6, 8], 15: [7, 8], 16: [7, 9], 17: [8, 9], 18: [8, 10], 19: [9, 10],
@@ -132,11 +136,11 @@ class BlackjackStrategy(abc.ABC):
                     fake_hand.add_card(Card(card))
                 playable = PlayableHand(Shoe(), 1, Card(upcard), fake_hand)
                 res.append(action_to_words[self.select_action(playable, Shoe())])
-            for soft_card in range(2,10):
+            for soft_card in range(2, 10):
                 fake_hand = Hand([Card(1), Card(soft_card)])
                 playable = PlayableHand(Shoe(), 1, Card(upcard), fake_hand)
                 res.append(action_to_words[self.select_action(playable, Shoe())])
-            for pair in range(1,11):
+            for pair in range(1, 11):
                 fake_hand = Hand([Card(pair), Card(pair)])
                 playable = PlayableHand(Shoe(), 1, Card(upcard), fake_hand)
                 res.append(action_to_words[self.select_action(playable, Shoe())])
@@ -146,7 +150,8 @@ class BlackjackStrategy(abc.ABC):
                 strategy[f"{upcard}"] = res
 
         df = pd.DataFrame(strategy)
-        df.index = [f"{i}" for i in range(8, 21)] + [f"A,{i}" for i in range(2, 10)] + ["A,A"] + [f"{i},{i}" for i in range(2,11)]
+        df.index = [f"{i}" for i in range(8, 21)] + [f"A,{i}" for i in range(2, 10)] + ["A,A"] + [
+            f"{i},{i}" for i in range(2, 11)]
         with open("strategy.html", "w") as f:
             f.write(f"""
             <html>
