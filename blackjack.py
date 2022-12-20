@@ -163,9 +163,11 @@ class BlackjackStrategy(abc.ABC):
 
 
 class BlackjackGame:
-    def __init__(self, strategy: BlackjackStrategy, num_decks: int = 2, verbose=False):
+    def __init__(self, strategy: BlackjackStrategy, num_decks: int = 2, is_stacked: bool = False,
+            verbose: bool = False):
         self.strategy = strategy
-        self.shoe = Shoe(num_decks)
+        self.shoe = Shoe(num_decks, is_stacked)
+
         self.verbose = verbose
         self.count_stats = {}
 
@@ -201,7 +203,7 @@ class BlackjackGame:
                 self.count_stats[self.shoe.get_count()][0] += 1
                 self.count_stats[self.shoe.get_count()][1] += winnings
         return bankroll, total_amount_bet
-    
+
     def plot(self):
         sns.set_theme(style="darkgrid")
         vals = []
@@ -216,9 +218,9 @@ class BlackjackGame:
         for item in self.count_stats.items():
             if abs(item[0]) <= 15:
                 counts.append(item[0])
-                vals.append(item[1][1]/item[1][0])
-        sns.scatterplot(x=counts,y=vals)
-        sns.regplot(x=counts, y =vals)
+                vals.append(item[1][1] / item[1][0])
+        sns.scatterplot(x=counts, y=vals)
+        sns.regplot(x=counts, y=vals)
         plt.xlabel("current count")
         plt.ylabel("percent return at given count")
         plt.show()

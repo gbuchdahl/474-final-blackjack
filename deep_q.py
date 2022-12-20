@@ -103,11 +103,11 @@ class DeepQBlackjack(BlackjackStrategy):
     def load_model(self, fn):
         self.model = keras.models.load_model(fn)
 
-    def run_dqn(self, n_episodes=200_000, num_decks=1):
+    def run_dqn(self, n_episodes=50_000, num_decks=2, stacked=False):
         """
         Trains the model using Deep Q Learning.
         """
-        shoe = Shoe(num_decks)
+        shoe = Shoe(num_decks=num_decks, is_stacked=stacked)
         for e in range(n_episodes):
             hand = shoe.deal_hand()
             upcard = shoe.deal()
@@ -165,10 +165,10 @@ class DeepQBlackjack(BlackjackStrategy):
 
 if __name__ == "__main__":
     dqn = DeepQBlackjack()
-    # dqn.run_dqn()
-    # dqn.save_model("dqn-pair-hidden-layer.h5")
+    dqn.run_dqn(stacked=True)
+    dqn.save_model("dqn-stacked-deck.h5")
     results = []
-    dqn.load_model("dqn-pair-hidden-layer.h5")
+    # dqn.load_model("dqn-pair-hidden-layer.h5")
     dqn.print_strategy()
 
     game = BlackjackGame(dqn, num_decks=2, verbose=False)
