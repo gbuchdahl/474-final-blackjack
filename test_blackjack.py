@@ -9,8 +9,8 @@ class TestStrategy(BlackjackStrategy):
     def select_action(self, hand: PlayableHand, shoe: Shoe) -> Action:
         return basic_strategy(hand)
 
+
     def select_bet_size(self, shoe: Shoe) -> int:
-    
         if shoe.get_count() > 5:
             return 50
         elif shoe.get_count() > 10:
@@ -25,6 +25,9 @@ class TestStrategy(BlackjackStrategy):
 # strategy.q_learn()
 # strategy.print_strategy()
 strategy = TestStrategy()
+
+# strategy = TestStrategy()
+# strategy.print_strategy()
 
 results = []
 for _ in range(10):
