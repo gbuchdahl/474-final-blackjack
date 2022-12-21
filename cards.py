@@ -113,6 +113,10 @@ class Shoe:
         shuffle(self.cards)
 
     def deal(self) -> Card:
+        if len(self.cards) <= 10:
+            self.cards = self.cards + self.discards
+            self.discards = []
+            self.shuffle()
         card = self.cards.pop()
         self.discards.append(card)
         if card.get_value() == 10 or card.get_value() == 1:
@@ -122,11 +126,6 @@ class Shoe:
         return card
 
     def deal_hand(self) -> Hand:
-        if len(self.cards) <= 10:
-            self.cards = self.cards + self.discards
-            self.discards = []
-            self.shuffle()
-
         hand = Hand()
         hand.add_card(self.deal())
         hand.add_card(self.deal())

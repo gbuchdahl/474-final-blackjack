@@ -1,32 +1,95 @@
-import scipy
+from time import sleep
 
-from blackjack import BlackjackStrategy, Action, PlayableHand, BlackjackGame
-from cards import Shoe
-from basic_strategy import basic_strategy
+from basic_strategy import BasicStrategy
+from blackjack import BlackjackGame
+from deep_q import DeepQBlackjack
+from q_learning import QBet, QStrategyStdBet
 
+print("Welcome, Professor Glenn!")
+print("Project: Blackjack")
+print("By Gabriel Buchdahl & Trey Skidmore")
+print(
+    "If you haven't yet, check out our readme at https://github.com/gbuchdahl/474-final-blackjack#readme")
 
-class TestStrategy(BlackjackStrategy):
-    def select_action(self, hand: PlayableHand, shoe: Shoe) -> Action:
-        return basic_strategy(hand)
+print("\n\n")
 
-    def select_bet_size(self, shoe: Shoe) -> int:
-        return 10
+print("First, we spent a lot of time coding a model for the game of Blackjack.")
+print("Here's what it looks like in verbose mode, playing a few hands")
 
+game = BlackjackGame(strategy=BasicStrategy(), verbose=True)
+game.play(num_hands=2)
 
-# strategy = QBet()
-# strategy.q_learn()
-# strategy.print_strategy()
-strategy = TestStrategy()
+print("\n\n")
 
-# strategy = TestStrategy()
-# strategy.print_strategy()
+print("As a benchmark, we implemented basic strategy, the best possible blackjack strategy.")
+print("Here are it's results over 5 100,000 hand games")
+print("Basic Strategy, No Bet Size Adjustment\n------")
 
+game = BlackjackGame(strategy=BasicStrategy(), verbose=False)
 results = []
-for _ in range(10):
-    game = BlackjackGame(strategy, num_decks=2, verbose=False, is_stacked=True)
-    initial_bankroll = 1_000_000
-    res = game.play(num_hands=500_000, initial_bankroll=initial_bankroll)
+initial_bankroll = 100_000
+for _ in range(5):
+    res = game.play(num_hands=1_000_000, initial_bankroll=initial_bankroll)
     results.append((res[0] - initial_bankroll) / res[1])
     print("Result: ", (res[0] - initial_bankroll) / res[1])
+
+print("As you can see, it is extremely close to break-even. This is possible due to a few quirks "
+      "in our Blackjack implementation (we applied an approximation for split) as well as the "
+      "fact that we pay blackjack out 3 to 2.")
 game.plot()
-print(scipy.stats.describe(results))
+
+print("\n\n")
+
+print("Next, we tried using Q-learning to select bet sizes based on the \"count\" of the shoe.")
+print("Here are it's results over 5 1,000,000 hand games")
+print("Basic Strategy, Q-Learned Bet Size Adjustment\n------")
+q_bet = QBet()
+q_bet.q_learn(4)
+game = BlackjackGame(strategy=q_bet, verbose=False, num_decks=4)
+results = []
+initial_bankroll = 100_000
+for _ in range(5):
+    res = game.play(num_hands=100_000, initial_bankroll=initial_bankroll)
+    results.append((res[0] - initial_bankroll) / res[1])
+    print("Result: ", (res[0] - initial_bankroll) / res[1])
+
+print("\n\n")
+
+print("Then, we tried to use Q-learning to see if it could come up with a strategy competitive "
+      "with the performance of basic strategy.")
+print("Here are it's results over 5 100,000 hand games")
+print("Q-Learned Strategy, No Bet Size Adjustment\n------")
+q_bet = QStrategyStdBet()
+q_bet.q_learn(4)
+game = BlackjackGame(strategy=q_bet, verbose=False, num_decks=4)
+results = []
+initial_bankroll = 100_000
+for _ in range(5):
+    res = game.play(num_hands=100_000, initial_bankroll=initial_bankroll)
+    results.append((res[0] - initial_bankroll) / res[1])
+    print("Result: ", (res[0] - initial_bankroll) / res[1])
+
+print("As you can see, it struggled to beat basic strategy. It's likely that the state space was "
+      "too large for Q-Learning to be effective.")
+
+print("\n\n")
+dqn = DeepQBlackjack()
+results = []
+dqn.load_model("trained-dqn-model.h5")
+
+print("Finally, we used Deep-Q learning with a neural network.")
+print("Here are it's results over 5 100,000 hand games")
+print("Deep-Q Strategy, No Bet Size Adjustment\n------")
+
+game = BlackjackGame(dqn, num_decks=2, verbose=False)
+initial_bankroll = 1_000_000
+for _ in range(5):
+    res = game.play(num_hands=100_000, initial_bankroll=initial_bankroll)
+    results.append((res[0] - initial_bankroll) / res[1])
+    print("Result: ", (res[0] - initial_bankroll) / res[1])
+
+print("We were able to achieve results with greater than 99% return, nearly as good as basic "
+      "strategy.")
+print("This was our goal for the project!")
+print("To view the outputted strategy, as well as learn more about the project, check out our "
+      "readme!")

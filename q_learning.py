@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from blackjack import BlackjackStrategy, Action, PlayableHand, BlackjackGame
 from cards import Shoe, Card
 import time
@@ -62,8 +64,8 @@ class QStrategyStdBet(BlackjackStrategy):
 
 class QBet(BlackjackStrategy):
     def __init__(self) -> None:
-        self.Q_dict = {}
-        self.Q_visits = {}
+        self.Q_dict = defaultdict(lambda: [0, 0])
+        self.Q_visits = defaultdict(lambda: [0, 0])
 
     def select_action(self, playable_hand: PlayableHand, shoe: Shoe) -> Action:
         return basic_strategy(playable_hand)
@@ -74,7 +76,7 @@ class QBet(BlackjackStrategy):
         shoe = Shoe(num_decks)
         prev_bet = None
         bets = [10, 50]
-        while time.time() - start < 120:
+        while time.time() - start < 10:
             hand = shoe.deal_hand()
             upcard = shoe.deal()
             if prev_bet is None:
@@ -85,9 +87,6 @@ class QBet(BlackjackStrategy):
             elif int(shoe.get_count() / 5) < -4:
                 count = -4
             key = count
-            if key not in self.Q_dict.keys():
-                self.Q_dict[key] = [0, 0]
-                self.Q_visits[key] = [0, 0]
             if random.random() < epsilon:
                 bet = random.choice(bets)
             else:
@@ -112,5 +111,5 @@ class QBet(BlackjackStrategy):
         elif int(shoe.get_count() / 5) < -4:
             count = -4
         key = count
-        bets = [10, 20]
+        bets = [10, 50]
         return bets[np.argmax(self.Q_dict[key])]
