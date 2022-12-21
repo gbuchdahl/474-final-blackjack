@@ -34,7 +34,7 @@ and a strategy with Deep-Q learning. It didn't beat the house every run, but cer
 
 ### Benchmarking Against Basic Strategy
 
-We wanted to benchmark against basic strategy, which is found in `basic_strategy.py`.
+We wanted to benchmark against basic strategy, the best possible strategy, which is found in `basic_strategy.py`.
 On our model, basic strategy performs extremely well: it's essentially breakeven.
 
 ```bash
