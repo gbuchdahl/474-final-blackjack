@@ -22,7 +22,7 @@ game.play(num_hands=2)
 print("\n\n")
 
 print("As a benchmark, we implemented basic strategy, the best possible blackjack strategy.")
-print("Here are it's results over 5 100,000 hand games")
+print("Here are it's results over 5 1,000,000 hand games")
 print("Basic Strategy, No Bet Size Adjustment\n------")
 
 game = BlackjackGame(strategy=BasicStrategy(), verbose=False)
@@ -36,12 +36,11 @@ for _ in range(5):
 print("As you can see, it is extremely close to break-even. This is possible due to a few quirks "
       "in our Blackjack implementation (we applied an approximation for split) as well as the "
       "fact that we pay blackjack out 3 to 2.")
-game.plot()
 
 print("\n\n")
 
 print("Next, we tried using Q-learning to select bet sizes based on the \"count\" of the shoe.")
-print("Here are it's results over 5 1,000,000 hand games")
+print("Here are it's results over 5 100,000 hand games")
 print("Basic Strategy, Q-Learned Bet Size Adjustment\n------")
 q_bet = QBet()
 q_bet.q_learn(4)
