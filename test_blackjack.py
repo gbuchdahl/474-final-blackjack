@@ -8,6 +8,7 @@ from q_learning import QBet, QStrategyStdBet
 print("Welcome, Professor Glenn!")
 print("Project: Blackjack")
 print("By Gabriel Buchdahl & Trey Skidmore")
+print("If you haven't installed the virtual env, try `make install-venv`")
 print(
     "If you haven't yet, check out our readme at https://github.com/gbuchdahl/474-final-blackjack#readme")
 
@@ -22,14 +23,14 @@ game.play(num_hands=2)
 print("\n\n")
 
 print("As a benchmark, we implemented basic strategy, the best possible blackjack strategy.")
-print("Here are it's results over 5 1,000,000 hand games")
+print("Here are it's results over 5 100,000 hand games")
 print("Basic Strategy, No Bet Size Adjustment\n------")
 
 game = BlackjackGame(strategy=BasicStrategy(), verbose=False)
 results = []
 initial_bankroll = 100_000
 for _ in range(5):
-    res = game.play(num_hands=1_000_000, initial_bankroll=initial_bankroll)
+    res = game.play(num_hands=100_000, initial_bankroll=initial_bankroll)
     results.append((res[0] - initial_bankroll) / res[1])
     print("Result: ", (res[0] - initial_bankroll) / res[1])
 
