@@ -32,7 +32,7 @@ initial_bankroll = 100_000
 for _ in range(5):
     res = game.play(num_hands=100_000, initial_bankroll=initial_bankroll)
     results.append((res[0] - initial_bankroll) / res[1])
-    print("Result: ", (res[0] - initial_bankroll) / res[1])
+    print("Return:", (res[0] - initial_bankroll) / res[1])
 
 print("As you can see, it is extremely close to break-even. This is possible due to a few quirks "
       "in our Blackjack implementation (we applied an approximation for split) as well as the "
@@ -51,7 +51,7 @@ initial_bankroll = 100_000
 for _ in range(5):
     res = game.play(num_hands=100_000, initial_bankroll=initial_bankroll)
     results.append((res[0] - initial_bankroll) / res[1])
-    print("Result: ", (res[0] - initial_bankroll) / res[1])
+    print("Return:", (res[0] - initial_bankroll) / res[1])
 
 print("\n\n")
 
@@ -67,26 +67,29 @@ initial_bankroll = 100_000
 for _ in range(5):
     res = game.play(num_hands=100_000, initial_bankroll=initial_bankroll)
     results.append((res[0] - initial_bankroll) / res[1])
-    print("Result: ", (res[0] - initial_bankroll) / res[1])
+    print("Return:", (res[0] - initial_bankroll) / res[1])
 
 print("As you can see, it struggled to beat basic strategy. It's likely that the state space was "
       "too large for Q-Learning to be effective.")
 
-print("\n\n")
 dqn = DeepQBlackjack()
 results = []
 dqn.load_model("trained-dqn-model.h5")
 
+print("\n\n")
 print("Finally, we used Deep-Q learning with a neural network.")
-print("Here are it's results over 5 100,000 hand games")
+print("Here are it's results over 5 50,000 hand games")
+print("The model is pre-trained, and this runs very quickly on my M1 Max laptop, "
+      "but for some reason, it takes forever to run on the zoo, perhaps due to worse hardware "
+      "acceleration support.")
 print("Deep-Q Strategy, No Bet Size Adjustment\n------")
 
 game = BlackjackGame(dqn, num_decks=2, verbose=False)
 initial_bankroll = 1_000_000
 for _ in range(5):
-    res = game.play(num_hands=100_000, initial_bankroll=initial_bankroll)
+    res = game.play(num_hands=50_000, initial_bankroll=initial_bankroll)
     results.append((res[0] - initial_bankroll) / res[1])
-    print("Result: ", (res[0] - initial_bankroll) / res[1])
+    print("Return:", (res[0] - initial_bankroll) / res[1])
 
 print("We were able to achieve results with greater than 99% return, nearly as good as basic "
       "strategy.")

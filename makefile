@@ -12,5 +12,5 @@ install-venv:
 
 test:
 	@echo "Running test script"
-	@echo "Remember to make & source the virtual environment first: `make install-venv`"
+	@echo "Remember to make & source the virtual environment first"
 	python3 test_blackjack.py

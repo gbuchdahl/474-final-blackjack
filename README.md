@@ -22,11 +22,11 @@ On our model, basic strategy performs extremely well: it's essentially breakeven
 ```bash
 Basic Strategy, No Bet Size Adjustment
 ------
-Result:  -0.0039982268732996675
-Result:  -0.0067421978174741085
-Result:  0.0003046551303923958
-Result:  -0.0032714712049628915
-Result:  -0.0015145448531587835
+Return: -0.0039982268732996675
+Return: -0.0067421978174741085
+Return: 0.0003046551303923958
+Return: -0.0032714712049628915
+Return: -0.0015145448531587835
 ```
 
 ### Q-Learning
@@ -36,11 +36,22 @@ See `q_learning.py`
 At first, we attempted to use traditional Q learning to find optimal blackjack strategy.
 However, the rate of convergence was exceptionally slow because of the high number of states (each
 upcard and hand sum comprise independent states).
-Q-learning got mediocre results, but they were very unstable.
+Q-learning gets relatively bad results on short runs, and even on long runs they were very
+unstable.
 For example, our output frequently said things such as to hit a 13 on 10, stand 14 on 10, and
 hit 15 on 10.
 The fact that Q-learning was unable to determine that these states are very similar made it seem
 like an unappealing method.
+
+```bash
+Q-Learned Strategy (10 seconds), No Bet Size Adjustment
+------
+Return: -0.23262016061368812
+Return: -0.23298074780134062
+Return: -0.22952081266887847
+Return: -0.23371909881531192
+Return: -0.22904087767529097
+```
 
 We were also interested in using Q learning to find the optimal bet size at a given count, based on
 some given strategy. Here Q-learning worked pretty well because there weren't many states. In
@@ -64,6 +75,14 @@ used the "trick" where we copied weights over to a target network every 1000 epi
 as randomly sample episodes from replay. The outputted strategy was not exactly the same as
 basic strategy, but it was rather consistent, and performed quite well. Training the model took
 several hours, so we've included a successful pretrained model in `deep_q_model.h5`.
+
+```bash
+Return: -0.001998724951324155
+Return: -0.0003178421097843828
+Return: -0.005168136714443219
+Return: -0.0003605645410528485
+Return: -0.006112553517082481
+```
 
 ![deep_q](./img/deep_q_strategy.png)
 
