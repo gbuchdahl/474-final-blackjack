@@ -76,13 +76,13 @@ class QBet(BlackjackStrategy):
         shoe = Shoe(num_decks)
         prev_bet = None
         bets = [10, 50]
-        while time.time() - start < 60:
+        while time.time() - start < 120:
             count = int(shoe.get_count() / 5)
             hand = shoe.deal_hand()
             upcard = shoe.deal()
             if prev_bet is None:
                 prev_bet = 10
-            
+
             if count > 4:
                 count = 4
             elif count < -4:
@@ -100,7 +100,10 @@ class QBet(BlackjackStrategy):
                 if playable_hand.is_terminal():
                     reward = playable_hand.get_hand_reward()
                     self.Q_visits[key][bets.index(bet)] += 1
-                    self.Q_dict[key][bets.index(bet)] = ((self.Q_visits[key][bets.index(bet)] - 1) * self.Q_dict[key][bets.index(bet)] + reward) / self.Q_visits[key][bets.index(bet)]
+                    self.Q_dict[key][bets.index(bet)] = ((self.Q_visits[key][bets.index(bet)] - 1) *
+                                                         self.Q_dict[key][
+                                                             bets.index(bet)] + reward) / \
+                                                        self.Q_visits[key][bets.index(bet)]
 
     def select_bet_size(self, shoe: Shoe) -> Action:
         count = int(shoe.get_count() / 5)
