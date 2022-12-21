@@ -4,7 +4,8 @@ By: Gabriel Buchdahl & Trey Skidmore
 
 ## To Run
 
-Dr. Glenn, this is what you're looking for!
+Dr. Glenn, this is what you're looking for! The script takes a long time to run on the Zoo,
+though: feel free to run it and then come back and read this while it runs!
 
 ```bash
 make install-venv # install virtual environment
