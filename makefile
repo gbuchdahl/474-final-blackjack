@@ -13,4 +13,6 @@ install-venv:
 test:
 	@echo "Running test script"
 	@echo "Remember to make & source the virtual environment first"
+	@echo "Please read the readme formatted nicely on Github"
+	@echo "https://github.com/gbuchdahl/474-final-blackjack#readme"
 	python3 test_blackjack.py

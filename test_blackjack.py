@@ -6,7 +6,7 @@ from deep_q import DeepQBlackjack
 from q_learning import QBet, QStrategyStdBet
 from scipy.stats import describe
 
-print("Welcome, Professor Glenn!")
+print("\n\n\nWelcome, Professor Glenn!")
 print("Project: Blackjack")
 print("By Gabriel Buchdahl & Trey Skidmore")
 print("If you haven't installed the virtual env, try `make install-venv`")
