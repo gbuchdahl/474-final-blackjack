@@ -193,7 +193,7 @@ if __name__ == "__main__":
     # dqn.run_dqn()
     # dqn.save_model("dqn-hidden-layers.h5")
     results = []
-    dqn.load_model("dqn-pair-hidden-layer.h5")
+    dqn.load_model("trained-dqn-model.h5")
     dqn.print_strategy()
 
     game = BlackjackGame(dqn, num_decks=2, verbose=False)
