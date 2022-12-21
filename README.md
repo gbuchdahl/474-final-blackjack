@@ -107,11 +107,11 @@ several hours, so we've included a successful pretrained model in `deep_q_model.
 ```bash
 Deep-Q Strategy, No Bet Size Adjustment
 ------
-Return: 97.9128%
-Return: 98.8817%
-Return: 99.0695%
-Return: 97.9318%
-Return: 97.8873%
+Return: 100.0443%
+Return: 99.9002%
+Return: 100.3079%
+Return: 99.5140%
+Return: 99.4358%
 ```
 
 Here is a visual representation of the model's strategy:
@@ -163,8 +163,9 @@ See `test_blackjack.py` for testing our models.
 We both worked on the project together in the same room for much of it, so it's hard to assign
 credit. If we had to:
 
-- Gabe took the lead on the model, implementing much of the core game.
+- Gabe took the lead on the model, implementing the core game mechanics.
 - Trey finished it up, including beautifying the output, adding split / double, and card counting.
 - Trey implemented QLearning, for bet sizing and action selection.
 - Trey also spent time looking into card counting, including plotting how counting affects returns.
 - Gabe implemented the Deep Q learning model.
+- Gabe did the readme & final test script.
