@@ -6,7 +6,6 @@ import numpy as np
 from basic_strategy import basic_strategy
 
 
-
 class QStrategyStdBet(BlackjackStrategy):
     def __init__(self) -> None:
         self.Q_dict = {}
@@ -36,7 +35,7 @@ class QStrategyStdBet(BlackjackStrategy):
                 next_step = playable_hand.process_action(action)
                 reward = 0
                 if next_step.is_terminal():
-                    reward = next_step.get_hand_value()
+                    reward = next_step.get_hand_reward()
                 next_key = (min(22, next_step.hand.get_value()[0]), next_step.hand.get_value()[1],
                             next_step.upcard.get_value())
                 if next_key not in self.Q_dict.keys():
@@ -60,6 +59,7 @@ class QStrategyStdBet(BlackjackStrategy):
     def select_bet_size(self, shoe: Shoe) -> int:
         return 10
 
+
 class QBet(BlackjackStrategy):
     def __init__(self) -> None:
         self.Q_dict = {}
@@ -67,47 +67,50 @@ class QBet(BlackjackStrategy):
 
     def select_action(self, playable_hand: PlayableHand, shoe: Shoe) -> Action:
         return basic_strategy(playable_hand)
-    
+
     def q_learn(self, num_decks=4):
         epsilon = .25
         start = time.time()
         shoe = Shoe(num_decks)
         prev_bet = None
-        bets = [10,50]
+        bets = [10, 50]
         while time.time() - start < 120:
             hand = shoe.deal_hand()
             upcard = shoe.deal()
             if prev_bet is None:
                 prev_bet = 10
-            count = int(shoe.get_count()/5)
-            if int(shoe.get_count()/5) > 4:
+            count = int(shoe.get_count() / 5)
+            if int(shoe.get_count() / 5) > 4:
                 count = 4
-            elif int(shoe.get_count()/5) < -4:
+            elif int(shoe.get_count() / 5) < -4:
                 count = -4
             key = count
             if key not in self.Q_dict.keys():
                 self.Q_dict[key] = [0, 0]
-                self.Q_visits[key] = [0,0]
+                self.Q_visits[key] = [0, 0]
             if random.random() < epsilon:
-                    bet = random.choice(bets)
+                bet = random.choice(bets)
             else:
-                    bet = bets[np.argmax(self.Q_dict[key])]
+                bet = bets[np.argmax(self.Q_dict[key])]
             playable_hand = PlayableHand(shoe, bet, upcard, hand)
             while not playable_hand.is_terminal():
                 action = self.select_action(playable_hand, shoe)
                 playable_hand = playable_hand.process_action(action)
                 reward = 0
                 if playable_hand.is_terminal():
-                    reward = playable_hand.get_hand_value()
+                    reward = playable_hand.get_hand_reward()
                     self.Q_visits[key][bets.index(bet)] += 1
-                    self.Q_dict[key][bets.index(bet)] = ((self.Q_visits[key][bets.index(bet)]-1) * self.Q_dict[key][bets.index(bet)] + reward)/self.Q_visits[key][bets.index(bet)]
+                    self.Q_dict[key][bets.index(bet)] = ((self.Q_visits[key][bets.index(bet)] - 1) *
+                                                         self.Q_dict[key][
+                                                             bets.index(bet)] + reward) / \
+                                                        self.Q_visits[key][bets.index(bet)]
 
     def select_bet_size(self, shoe: Shoe) -> Action:
-        count = int(shoe.get_count()/5)
-        if int(shoe.get_count()/5) > 4:
+        count = int(shoe.get_count() / 5)
+        if int(shoe.get_count() / 5) > 4:
             count = 4
-        elif int(shoe.get_count()/5) < -4:
+        elif int(shoe.get_count() / 5) < -4:
             count = -4
         key = count
-        bets = [10,20]
+        bets = [10, 20]
         return bets[np.argmax(self.Q_dict[key])]

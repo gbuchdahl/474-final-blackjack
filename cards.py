@@ -3,6 +3,10 @@ from random import shuffle
 
 
 class Card:
+    """
+    Hands, Shoes are composed of card objects
+    """
+
     def __init__(self, value: int) -> None:
         self.value = value
 
@@ -23,6 +27,11 @@ class Card:
 
 
 class Hand:
+    """
+    Collection of cards that has a soft or hard value
+    A few other helpers are defined here: is_blackjack, is_bust
+    """
+
     def __init__(self, cards: Optional[List[Card]] = None):
         if cards is None:
             cards = []
@@ -72,6 +81,11 @@ class Hand:
 
 
 class Shoe:
+    """
+    Composed of num_decks decks of Card objects
+    Can be shuffled, dealt, and provides methods for card counting
+    """
+
     def __init__(self, num_decks: int = 2, is_stacked=False):
         self.cards: List[Card] = []
         self.discards: List[Card] = []

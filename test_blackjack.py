@@ -1,8 +1,7 @@
 import scipy
 
 from blackjack import BlackjackStrategy, Action, PlayableHand, BlackjackGame
-from cards import Shoe, Card
-from q_learning import QStrategyStdBet, QBet
+from cards import Shoe
 from basic_strategy import basic_strategy
 
 
@@ -11,12 +10,6 @@ class TestStrategy(BlackjackStrategy):
         return basic_strategy(hand)
 
     def select_bet_size(self, shoe: Shoe) -> int:
-        # if shoe.get_count() > 5:
-        #     return 50
-        # elif shoe.get_count() > 10:
-        #     return 500
-        # elif shoe.get_count() < -5:
-        #     return 0
         return 10
 
 

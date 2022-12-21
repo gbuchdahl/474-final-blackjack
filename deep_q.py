@@ -9,7 +9,7 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 
 from blackjack import BlackjackStrategy, PlayableHand, Action, BlackjackGame
-from cards import Shoe, Card, Hand
+from cards import Shoe
 
 NUM_HAND_VALUES = 22
 NUM_UPCARDS = 10
@@ -19,6 +19,11 @@ STATE_SIZE = NUM_HAND_VALUES + NUM_UPCARDS + NUM_PAIRS + EXTRA_INPUTS
 
 
 def hand_to_input_vector(hand: PlayableHand):
+    """
+    Our model processes hands as a couple concatenated one-hot vectors
+    :param hand: the hand to process
+    :return: a vector of length STATE_SIZE
+    """
     hand_value, soft = hand.hand.get_value()
     hand_value = min(22, hand_value)
     hand_vector = np.zeros(NUM_HAND_VALUES)
@@ -33,33 +38,49 @@ def hand_to_input_vector(hand: PlayableHand):
 
 
 def step(hand: PlayableHand, action: Action):
+    """
+    Helper function to process an action and return state to be fed to the model
+    :param hand: hand to apply action to
+    :param action: action to apply
+    :return: next hand, next state, reward, is_terminal
+    """
     next_hand = hand.process_action(action)
     if next_hand.is_terminal():
-        reward = next_hand.get_hand_value()
+        reward = next_hand.get_hand_reward()
     else:
         reward = 0
     return next_hand, hand_to_input_vector(next_hand), reward, next_hand.is_terminal()
 
 
 class DeepQBlackjack(BlackjackStrategy):
+    """
+    Code inspired by this tutorial for a different DeepQ learning application:
+    https://towardsdatascience.com/reinforcement-learning-w-keras-openai-dqns-1eed3a5338c
+    """
 
     def __init__(self):
         self.memory = deque(maxlen=2000)
-        self.gamma = 0.9999
+        self.gamma = 0.9999  # doesn't really need to be discounted
+        self.alpha = 0.001
+        self.tau = .250
+
+        # Need exploratation to find splits/doubles
         self.epsilon = 0.25
         self.epsilon_min = 0.1
-        self.epsilon_max = .25
         self.epsilon_interval = (
-                self.epsilon_max - self.epsilon_min
+                self.epsilon - self.epsilon_min
         )
         self.epsilon_decay = 0.995
+
         self.batch_size = 128
-        self.learning_rate = 0.001
         self.state_size = STATE_SIZE
         self.action_size = len(Action)
-        self.tau = .250
+
+        # Using Open-AI trick to copy weights from model to target model
         self.model = self._build_model()
         self.target_model = self._build_model()
+
+        # Store the trained model's moves, so we don't have to look them up each time
         self.cache = {}
 
     def _build_model(self):
@@ -67,7 +88,7 @@ class DeepQBlackjack(BlackjackStrategy):
         model.add(Dense(STATE_SIZE * 2, activation="relu", input_dim=self.state_size))
         model.add(Dense(STATE_SIZE, activation="relu"))
         model.add(Dense(self.action_size, activation="linear"))
-        model.compile(loss="mse", optimizer=Adam(lr=self.learning_rate))
+        model.compile(loss="mse", optimizer=Adam(lr=self.alpha))
         return model
 
     def remember(self, state, action, reward, next_state, is_terminal):
@@ -77,10 +98,11 @@ class DeepQBlackjack(BlackjackStrategy):
         minibatch = random.sample(self.memory, batch_size)
         inputs = np.array([m[0][0] for m in minibatch])
 
+        # Do as many predictions as possible in one batch (faster)
         predictions = self.model.predict(inputs, batch_size=batch_size)
 
         for i, (state, action, reward, next_state, is_terminal) in enumerate(minibatch):
-            target = reward  # if done
+            target = reward
             if not is_terminal:
                 target = (reward + self.gamma * np.amax(self.model.predict(next_state, verbose=0)[
                                                             0]))
@@ -91,6 +113,9 @@ class DeepQBlackjack(BlackjackStrategy):
             self.epsilon *= self.epsilon_decay
 
     def target_train(self):
+        """
+        Copy weights from model to target model
+        """
         weights = self.model.get_weights()
         target_weights = self.target_model.get_weights()
         for i in range(len(target_weights)):

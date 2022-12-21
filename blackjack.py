@@ -17,6 +17,10 @@ class Action(Enum):
 
 
 class PlayableHand:
+    """
+    The hand currently being played. Includes information like dealer up-card, bet.
+    """
+
     def __init__(self, shoe: Shoe, bet: int, upcard=None, hand: Hand = None,
             hand_over: bool = False):
         self.shoe = shoe
@@ -39,7 +43,7 @@ class PlayableHand:
     def is_terminal(self) -> bool:
         return self.hand_over or self.hand.is_bust()
 
-    def get_hand_value(self, verbose=False) -> int:
+    def get_hand_reward(self, verbose=False) -> int:
         """
         :return:  the value of a terminal hand after dealer play
         """
@@ -50,6 +54,7 @@ class PlayableHand:
 
             return -self.bet
 
+        # Play out the dealer
         dealer_hand = Hand([self.upcard, self.shoe.deal()])
         if verbose:
             print(f"Dealer hand: {dealer_hand}")
@@ -191,7 +196,7 @@ class BlackjackGame:
                     print(
                         f"Hand: {playable_hand.hand} Value: {playable_hand.get_value()} Action: {action}")
                 playable_hand = playable_hand.process_action(action)
-            winnings = playable_hand.get_hand_value(self.verbose)
+            winnings = playable_hand.get_hand_reward(self.verbose)
             bankroll += winnings
             if self.verbose:
                 print(f"Bankroll: {bankroll}")
