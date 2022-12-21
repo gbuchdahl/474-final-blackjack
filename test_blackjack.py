@@ -9,7 +9,7 @@ from scipy.stats import describe
 print("\n\n\nWelcome, Professor Glenn!")
 print("Project: Blackjack")
 print("By Gabriel Buchdahl & Trey Skidmore")
-print("If you haven't installed the virtual env, try `make install-venv`")
+print("If you haven't installed the virtual env, see the readme/makefile")
 print(
     "If you haven't yet, check out our readme at https://github.com/gbuchdahl/474-final-blackjack#readme")
 
