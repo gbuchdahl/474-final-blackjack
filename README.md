@@ -12,9 +12,20 @@ source venv/bin/activate # activate virtual environment if not active
 make test # run our test script which has examples of all our work
 ```
 
+## Results
+
+| Model | Mean Return |
+|------------------------------------------|-------------|
+| Basic Strategy, No Bet Variation | 99.840%     |
+| Basic Strategy, Q-Learning Bet Variation | 98.568%     |
+| Q-Learned Strategy, No Bet Variation | 78.874%     |
+| Deep-Q Strategy, No Bet Variation | 99.337%     |
+
+![img.png](img/returns.png)
+
 ## Our Approach
 
-### Benchmarking
+### Benchmarking Against Basic Strategy
 
 We wanted to benchmark against basic strategy, which is found in `basic_strategy.py`.
 On our model, basic strategy performs extremely well: it's essentially breakeven.
