@@ -2,7 +2,9 @@
 
 By: Gabriel Buchdahl & Trey Skidmore
 
-### To Run
+## To Run
+
+Dr. Glenn, this is what you're looking for!
 
 ```bash
 make install-venv # install virtual environment
@@ -12,7 +14,7 @@ make test # run our test script which has examples of all our work
 
 ## Our Approach
 
-### Benchmark
+### Benchmarking
 
 We wanted to benchmark against basic strategy, which is found in `basic_strategy.py`.
 On our model, basic strategy performs extremely well: it's essentially breakeven.
@@ -65,13 +67,26 @@ several hours, so we've included a successful pretrained model in `deep_q_model.
 
 ![deep_q](./img/deep_q_strategy.png)
 
-## The Model
+### Stacked Decks?
 
-Implement a strategy by extending the `BlackjackStrategy` class.
+I spent some time experimenting to see if the Deep-Q model could be used to learn a better
+strategy against a stacked deck than a naive basic strategy would perform. Unfortunately, it
+was unable to out-compete the basic strategy, so I've left it out of the test script.
 
-- All you need to implement is the `select_action` and `select_bet_size` methods, and we have
-  created functions to run the game for you.
-- We have included functionality to pretty-print your strategy to html as well.
+---
+
+## How Our Model Works
+
+Implementing a strategy is super easy: all you need to do is extend the `BlackjackStrategy`
+class. All you need to implement is the `select_action` and `select_bet_size` methods, which are
+self-explanatory.
+
+Once you have a strategy:
+
+- You can create a `BlackjackGame` object, which takes in a strategy and a number of decks.
+- You can call `play()` on the game object to play however many hands you'd like.
+- We have included functionality to pretty-print your strategy to html, as well as plot
+  performance against certain counts.
 
 ## Testing
 
