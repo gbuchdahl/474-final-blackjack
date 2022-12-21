@@ -1,3 +1,5 @@
+import time
+
 from basic_strategy import BasicStrategy
 from blackjack import BlackjackGame, BlackjackStrategy
 from deep_q import DeepQBlackjack
@@ -10,6 +12,8 @@ print("By Gabriel Buchdahl & Trey Skidmore")
 print("If you haven't installed the virtual env, try `make install-venv`")
 print(
     "If you haven't yet, check out our readme at https://github.com/gbuchdahl/474-final-blackjack#readme")
+
+time.sleep(2)
 
 print("\n\n")
 
