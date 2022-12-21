@@ -8,8 +8,9 @@ Dr. Glenn, this is what you're looking for! The script takes a long time to run 
 though: feel free to run it and then come back and read this while it runs!
 
 ```bash
-make install-venv # install virtual environment
+make venv # create virtual environment
 source venv/bin/activate # activate virtual environment if not active
+make install # install dependencies
 make test # run our test script which has examples of all our work
 ```
 
